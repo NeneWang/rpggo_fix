@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:rpggo/location_services.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -78,9 +80,19 @@ class MapSampleState extends State<MapSample> {
         children: [
           Row(
             children: [
-              Expanded(child: TextFormField()),
+              Expanded(
+                  child: TextFormField(
+                controller: _searchController,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(hintText: "Search by City"),
+                onChanged: (value) {
+                  print(value);
+                },
+              )),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  LocationService().getPlace(_searchController.text);
+                },
                 icon: Icon(Icons.search),
               )
             ],
