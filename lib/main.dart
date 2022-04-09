@@ -41,6 +41,7 @@ class MapSampleState extends State<MapSample> {
     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
     position: LatLng(37.43296265331129, -122.08832357078792),
   );
+
 // //
 //   static final CameraPosition _kLakeMarker = Marker(
 //       markerId: MarkerId('_kLakeMarker'),
@@ -55,12 +56,37 @@ class MapSampleState extends State<MapSample> {
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
 
+  static final Polyline _kPolyline = Polyline(
+    polylineId: PolylineId('_kPolyline'),
+    points: [
+      LatLng(37.43296265331129, -122.08832357078792),
+      LatLng(37.43296265331129, -122.08832357078792)
+    ],
+    width: 5,
+  );
+
+  static final Polygon _kPolygon = Polygon(
+    polygonId: PolygonId('_kPolygon'),
+    points: [
+      LatLng(37.43296265331129, -122.08832357078792),
+      LatLng(37.43296265331129, -122.08832357078792),
+      LatLng(37.418, -122.092),
+      LatLng(37.435, -122.092),
+    ],
+    strokeWidth: 5,
+    fillColor: Colors.transparent,
+  );
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       body: GoogleMap(
         markers: {_kGooglePlexMarker, _kLakeMarker},
         mapType: MapType.hybrid,
+        polylines: {
+          _kPolyline,
+        },
+        polygons: {_kPolygon},
         initialCameraPosition: _kGooglePlex,
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
