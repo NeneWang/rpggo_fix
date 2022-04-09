@@ -3,7 +3,9 @@
    <application
         android:label="rpggo"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher">\
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyAHedcWWJ17w-V1js7ERyz3USvPosmjNKQ"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -21,8 +23,6 @@
               android:resource="@style/NormalTheme"
               />
 
-            <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyABXX0qKTGjRRwZfqVk7-4y7Tn0PV6ntSQ"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
