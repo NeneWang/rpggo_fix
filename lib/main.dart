@@ -89,8 +89,9 @@ class MapSampleState extends State<MapSample> {
                 },
               )),
               IconButton(
-                onPressed: () {
-                  LocationService().getPlace(_searchController.text);
+                onPressed: () async {
+                  var place = await LocationService().getPlace(_searchController.text);
+                  _goToPlace(place);
                 },
                 icon: Icon(Icons.search),
               )
