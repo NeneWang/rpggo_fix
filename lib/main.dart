@@ -69,7 +69,7 @@ class MapSampleState extends State<MapSample> {
     polygonId: PolygonId('_kPolygon'),
     points: [
       LatLng(37.43296265331129, -122.08832357078792),
-      LatLng(37.43296265331129, -122.08832357078792),
+      LatLng(37.42796133580664, -122.085749655962),
       LatLng(37.418, -122.092),
       LatLng(37.435, -122.092),
     ],
