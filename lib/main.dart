@@ -24,6 +24,9 @@ class MapSample extends StatefulWidget {
 class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
   TextEditingController _searchController = TextEditingController();
+  TextEditingController _originController = TextEditingController();
+
+  // _originController
 
   Set<Marker> _markers = Set<Marker>();
   Set<Polygon> _polygons = Set<Polygon>();
@@ -112,9 +115,9 @@ class MapSampleState extends State<MapSample> {
               Expanded(
                 child: Column(children: [
                   TextFormField(
-                    controller: _searchController,
+                    controller: _originController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(hintText: "Search by City"),
+                    decoration: InputDecoration(hintText: "You are here (Demo)"),
                     onChanged: (value) {
                       print(value);
                     },
