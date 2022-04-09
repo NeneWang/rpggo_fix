@@ -28,6 +28,27 @@ class MapSampleState extends State<MapSample> {
     zoom: 14.4746,
   );
 
+  static final Marker _kGooglePlexMarker = Marker(
+    markerId: MarkerId('_kGooglePlex'),
+    infoWindow: InfoWindow(title: "Google Plex"),
+    icon: BitmapDescriptor.defaultMarker,
+    position: LatLng(37.42796133580664, -122.085749655962),
+  );
+
+  static final Marker _kLakeMarker = Marker(
+    markerId: MarkerId('_kLakeMarker'),
+    infoWindow: InfoWindow(title: "Lake"),
+    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+    position: LatLng(37.43296265331129, -122.08832357078792),
+  );
+// //
+//   static final CameraPosition _kLakeMarker = Marker(
+//       markerId: MarkerId('_kLakeMarker'),
+//       infoWindow: InfoWindow(title: "Google Plex"),
+//       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+//       position: LatLng(37.43296265331129, -122.08832357078792),
+//       );
+
   static final CameraPosition _kLake = CameraPosition(
       bearing: 192.8334901395799,
       target: LatLng(37.43296265331129, -122.08832357078792),
@@ -38,6 +59,7 @@ class MapSampleState extends State<MapSample> {
   Widget build(BuildContext context) {
     return new Scaffold(
       body: GoogleMap(
+        markers: {_kGooglePlexMarker, _kLakeMarker},
         mapType: MapType.hybrid,
         initialCameraPosition: _kGooglePlex,
         onMapCreated: (GoogleMapController controller) {
