@@ -90,6 +90,17 @@ class MapSampleState extends State<MapSample> {
     });
   }
 
+  void _setPolygon() {
+    final String polygonIdVal = 'polygon_$_polygonIdCounter';
+    _polygonIdCounter++;
+
+    _polygons.add(Polygon(
+        polygonId: PolygonId(polygonIdVal),
+        points: polygonLatLngs,
+        strokeWidth: 2,
+        fillColor: Colors.transparent));
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -99,37 +110,74 @@ class MapSampleState extends State<MapSample> {
           Row(
             children: [
               Expanded(
-                  child: TextFormField(
-                controller: _searchController,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(hintText: "Search by City"),
-                onChanged: (value) {
-                  print(value);
-                },
-              )),
-              IconButton(
-                onPressed: () async {
-                  var place =
-                      await LocationService().getPlace(_searchController.text);
-                  _goToPlace(place);
-                },
-                icon: Icon(Icons.search),
-              )
+                child: Column(children: [
+                  TextFormField(
+                    controller: _searchController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(hintText: "Search by City"),
+                    onChanged: (value) {
+                      print(value);
+                    },
+                  ),
+                  TextFormField(
+                    controller: _searchController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(hintText: "Search by City"),
+                    onChanged: (value) {
+                      print(value);
+                    },
+                  )
+                ]),
+              ),
             ],
+          ),
+          // Row(
+          //   children: [
+          //     Expanded(
+          //         child: TextFormField(
+          //       controller: _searchController,
+          //       textCapitalization: TextCapitalization.words,
+          //       decoration: InputDecoration(hintText: "Search by City"),
+          //       onChanged: (value) {
+          //         print(value);
+          //       },
+          //     )),
+          //     IconButton(
+          //       onPressed: () async {
+          //         var place =
+          //             await LocationService().getPlace(_searchController.text);
+          //         _goToPlace(place);
+          //       },
+          //       icon: Icon(Icons.search),
+          //     )
+          //   ],
+          // ),
+          IconButton(
+            onPressed: () async {
+              var place =
+                  await LocationService().getPlace(_searchController.text);
+              _goToPlace(place);
+            },
+            icon: Icon(Icons.search),
           ),
           Expanded(
             child: GoogleMap(
-              markers: _markers,
-              mapType: MapType.hybrid,
-              polylines: {
-                _kPolyline,
-              },
-              polygons: {_kPolygon},
-              initialCameraPosition: _kGooglePlex,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-            ),
+                markers: _markers,
+                mapType: MapType.hybrid,
+                polylines: {
+                  _kPolyline,
+                },
+                polygons: _polygons,
+                initialCameraPosition: _kGooglePlex,
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                onTap: (point) {
+                  setState(() {
+                    polygonLatLngs.add(point);
+                    _setPolygon();
+                  });
+                }),
           )
         ],
       ),
