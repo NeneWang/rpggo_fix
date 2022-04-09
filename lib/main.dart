@@ -22,6 +22,7 @@ class MapSample extends StatefulWidget {
 
 class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
+  TextEditingController _searchController = TextEditingController();
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -41,14 +42,6 @@ class MapSampleState extends State<MapSample> {
     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
     position: LatLng(37.43296265331129, -122.08832357078792),
   );
-
-// //
-//   static final CameraPosition _kLakeMarker = Marker(
-//       markerId: MarkerId('_kLakeMarker'),
-//       infoWindow: InfoWindow(title: "Google Plex"),
-//       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-//       position: LatLng(37.43296265331129, -122.08832357078792),
-//       );
 
   static final CameraPosition _kLake = CameraPosition(
       bearing: 192.8334901395799,
@@ -80,17 +73,33 @@ class MapSampleState extends State<MapSample> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: GoogleMap(
-        markers: {_kGooglePlexMarker, _kLakeMarker},
-        mapType: MapType.hybrid,
-        polylines: {
-          _kPolyline,
-        },
-        polygons: {_kPolygon},
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
+      appBar: AppBar(title: Text("Google Maps")),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: TextFormField()),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.search),
+              )
+            ],
+          ),
+          Expanded(
+            child: GoogleMap(
+              markers: {_kGooglePlexMarker, _kLakeMarker},
+              mapType: MapType.hybrid,
+              polylines: {
+                _kPolyline,
+              },
+              polygons: {_kPolygon},
+              initialCameraPosition: _kGooglePlex,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+            ),
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToTheLake,
