@@ -84,6 +84,12 @@ class MapSampleState extends State<MapSample> {
     _setMarker(LatLng(37.42796133580664, -122.085749655962));
   }
 
+  void _setMarker(LatLng point) {
+    setState(() {
+      _markers.add(Marker(markerId: MarkerId('marker'), position: point));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -142,6 +148,8 @@ class MapSampleState extends State<MapSample> {
     controller.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: LatLng(lat, lng), zoom: 12),
     ));
+
+    _setMarker(LatLng(lat, lng));
   }
 
   Future<void> _goToTheLake() async {
