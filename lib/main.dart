@@ -119,7 +119,7 @@ class MapSampleState extends State<MapSample> {
           ),
           Expanded(
             child: GoogleMap(
-              markers: {_kGooglePlexMarker, _kLakeMarker},
+              markers: _markers,
               mapType: MapType.hybrid,
               polylines: {
                 _kPolyline,
