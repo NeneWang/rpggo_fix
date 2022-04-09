@@ -25,6 +25,12 @@ class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
   TextEditingController _searchController = TextEditingController();
 
+  Set<Marker> _markers = Set<Marker>();
+  Set<Polygon> _polygons = Set<Polygon>();
+  List<LatLng> polygonLatLngs = <LatLng>[];
+
+  int _polygonIdCounter = 1;
+
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
@@ -72,6 +78,13 @@ class MapSampleState extends State<MapSample> {
   );
 
   @override
+  void initState() {
+    super.initState();
+
+    _setMarker(LatLng(37.42796133580664, -122.085749655962));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(title: Text("Google Maps")),
@@ -90,7 +103,8 @@ class MapSampleState extends State<MapSample> {
               )),
               IconButton(
                 onPressed: () async {
-                  var place = await LocationService().getPlace(_searchController.text);
+                  var place =
+                      await LocationService().getPlace(_searchController.text);
                   _goToPlace(place);
                 },
                 icon: Icon(Icons.search),
