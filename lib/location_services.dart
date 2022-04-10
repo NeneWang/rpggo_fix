@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
 class LocationService {
-    final String key = "AIzaSyAHedcWWJ17w-V1js7ERyz3USvPosmjNKQ";
+  final String key = "AIzaSyAHedcWWJ17w-V1js7ERyz3USvPosmjNKQ";
 
   Future<String> getPlaceId(String input) async {
     // print(input);
@@ -28,5 +28,15 @@ class LocationService {
     var results = json["result"] as Map<String, dynamic>;
     print(results);
     return results;
+  }
+
+  getDirections(String origin, String destination) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&key=$key';
+
+    var response = await http.get(Uri.parse(url));
+    var json = convert.jsonDecode(response.body);
+
+    print(json);
   }
 }

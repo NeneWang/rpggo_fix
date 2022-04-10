@@ -157,9 +157,10 @@ class MapSampleState extends State<MapSample> {
           // ),
           IconButton(
             onPressed: () async {
-              var place =
-                  await LocationService().getPlace(_searchController.text);
-              _goToPlace(place);
+              LocationService().getDirections(_originController.text, _searchController.text);
+              // var place =
+              //     await LocationService().getPlace(_searchController.text);
+              // _goToPlace(place);
             },
             icon: Icon(Icons.search),
           ),
