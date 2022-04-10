@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
-
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 class LocationService {
   final String key = "AIzaSyAHedcWWJ17w-V1js7ERyz3USvPosmjNKQ";
 
@@ -45,6 +45,7 @@ class LocationService {
       'start_location': json["routes"][0]["legs"][0]["start_location"],
       'end_location': json["routes"][0]["legs"][0]["end_location"],
       'polyline': json["routes"][0]["overview_polyline"]["points"],
+      'polyline_decode': PolylinePoints().decodePolyline(json['routes'][0]['overview_polyline']['points'])
     };
 
     print(results);
