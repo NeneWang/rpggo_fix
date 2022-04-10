@@ -222,6 +222,8 @@ class MapSampleState extends State<MapSample> {
     // Map<String, dynamic> place
     double lat,
     double lng,
+    Map<String, dynamic> boundsNe,
+    Map<String, dynamic> boundsSw,
   ) async {
     // final double lat = place['geometry']['location']['lat'];
     // final double lng = place['geometry']['location']['lng'];
@@ -229,6 +231,12 @@ class MapSampleState extends State<MapSample> {
     controller.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: LatLng(lat, lng), zoom: 12),
     ));
+
+    controller.animateCamera(CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+            southwest: LatLng(boundsSw['lat'], boundsSw['lng']),
+            northeast: LatLng(boundsNe['lat'], boundsNe['lng'])),
+        25));
 
     _setMarker(LatLng(lat, lng));
   }
