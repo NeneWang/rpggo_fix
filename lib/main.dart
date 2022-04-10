@@ -110,7 +110,8 @@ class MapSampleState extends State<MapSample> {
   void _setPolyline(List<PointLatLng> points) {
     final String polylineIdVal = 'polyline_$_polylinesIdCounter';
     _polylinesIdCounter++;
-
+    print("this is the polyline I received");
+    print(polylineIdVal);
     _polylines.add(
       Polyline(
           polylineId: PolylineId(polylineIdVal),
@@ -176,13 +177,17 @@ class MapSampleState extends State<MapSample> {
           // ),
           IconButton(
             onPressed: () async {
-              var directions = LocationService().getDirections(
+              // print('origins: ${_originController.text}');
+              var directions = await LocationService().getDirections(
                   _originController.text, _searchController.text);
               // var place =
               //     await LocationService().getPlace(_searchController.text);
               // _goToPlace(place);
+              // print('Directions $directions');
               _goToPlace(directions['start_location']['lat'],
                   directions['start_location']['lng']);
+
+              _setPolyline(directions['polyline_decode']);
             },
             icon: Icon(Icons.search),
           ),
@@ -190,9 +195,7 @@ class MapSampleState extends State<MapSample> {
             child: GoogleMap(
                 markers: _markers,
                 mapType: MapType.hybrid,
-                polylines: {
-                  _kPolyline,
-                },
+                polylines: _polylines,
                 polygons: _polygons,
                 initialCameraPosition: _kGooglePlex,
                 onMapCreated: (GoogleMapController controller) {

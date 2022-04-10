@@ -35,9 +35,9 @@ class LocationService {
     final String url =
         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&key=$key';
 
-    print(url);
+    // print(url);
     var response = await http.get(Uri.parse(url));
-    print(response.body);
+    // print(response.body);
     var json = convert.jsonDecode(response.body);
 
     var results = {
@@ -49,6 +49,6 @@ class LocationService {
       'polyline_decode': PolylinePoints().decodePolyline(json['routes'][0]['overview_polyline']['points'])
     };
 
-    print(results);
+    return(results);
   }
 }
