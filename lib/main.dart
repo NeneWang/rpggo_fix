@@ -1,270 +1,246 @@
-import 'dart:async';
+/// -----------------------------------
+///          External Packages
+/// -----------------------------------
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:rpggo/location_services.dart';
-import 'package:location/location.dart';
 
-void main() => runApp(MyApp());
+import 'package:http/http.dart' as http;
+import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class MyApp extends StatelessWidget {
+final FlutterAppAuth appAuth = FlutterAppAuth();
+const FlutterSecureStorage secureStorage = FlutterSecureStorage();
+
+/// -----------------------------------
+///           Auth0 Variables
+/// -----------------------------------
+const String AUTH0_DOMAIN = 'dev-25sxrx7k.us.auth0.com';
+const String AUTH0_CLIENT_ID = 'ZGo9AudKjMughLUTaT2NzeFvBeSJ64Lg';
+
+const String AUTH0_REDIRECT_URI = 'com.auth0.flutterdemo://login-callback';
+const String AUTH0_ISSUER = 'https://$AUTH0_DOMAIN';
+
+/// -----------------------------------
+///           Profile Widget
+/// -----------------------------------
+class Profile extends StatelessWidget {
+  final Future<void> Function() logoutAction;
+  final String name;
+  final String picture;
+
+  const Profile(this.logoutAction, this.name, this.picture, {Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.blue, width: 4),
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              fit: BoxFit.fill,
+              image: NetworkImage(picture ?? ''),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text('Name: $name'),
+        const SizedBox(height: 48),
+        RaisedButton(
+          onPressed: () async {
+            await logoutAction();
+          },
+          child: const Text('Logout'),
+        ),
+      ],
+    );
+  }
+}
+
+/// -----------------------------------
+///            Login Widget
+/// -----------------------------------
+class Login extends StatelessWidget {
+  final Future<void> Function() loginAction;
+  final String loginError;
+
+  const Login(this.loginAction, this.loginError, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        RaisedButton(
+          onPressed: () async {
+            await loginAction();
+          },
+          child: const Text('Login'),
+        ),
+        Text(loginError ?? ''),
+      ],
+    );
+  }
+}
+
+/// -----------------------------------
+///                 App
+/// -----------------------------------
+void main() => runApp(const MyApp());
+
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+/// -----------------------------------
+///              App State
+/// -----------------------------------
+class _MyAppState extends State<MyApp> {
+  bool isBusy = false;
+  bool isLoggedIn = false;
+  String? errorMessage;
+  String? name;
+  String? picture;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Google Maps Demo',
-      home: MapSample(),
+      title: 'Auth0 Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Auth0 Demo'),
+        ),
+        body: Center(
+          child: isBusy
+              ? const CircularProgressIndicator()
+              : isLoggedIn
+                  ? Profile(logoutAction, name!, picture!)
+                  : Login(loginAction, errorMessage!),
+        ),
+      ),
     );
   }
-}
 
-class MapSample extends StatefulWidget {
-  @override
-  State<MapSample> createState() => MapSampleState();
-}
+  Map<String, Object> parseIdToken(String idToken) {
+    final List<String> parts = idToken.split('.');
+    assert(parts.length == 3);
 
-class MapSampleState extends State<MapSample> {
-  Completer<GoogleMapController> _controller = Completer();
-  TextEditingController _searchController = TextEditingController();
-  TextEditingController _originController = TextEditingController();
-  // ignore: non_constant_identifier_names
-  late GoogleMapController _controller_on;
-
-  // _originController
-
-  Set<Marker> _markers = Set<Marker>();
-  Set<Polygon> _polygons = Set<Polygon>();
-  Set<Polyline> _polylines = Set<Polyline>();
-  List<LatLng> polygonLatLngs = <LatLng>[];
-
-  Location _location = Location();
-
-  int _polygonIdCounter = 1;
-  int _polylinesIdCounter = 2;
-
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
-  void _onMapCreated(GoogleMapController _cntlr) {
-    _controller_on = _cntlr;
-    _location.onLocationChanged.listen((l) {
-      print("location changed!");
-      _controller_on.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: LatLng(l.latitude!, l.longitude!), zoom: 15),
-        ),
-      );
-    });
+    return jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
   }
 
-  static final Marker _kGooglePlexMarker = Marker(
-    markerId: MarkerId('_kGooglePlex'),
-    infoWindow: InfoWindow(title: "Google Plex"),
-    icon: BitmapDescriptor.defaultMarker,
-    position: LatLng(37.42796133580664, -122.085749655962),
-  );
+  Future<Map<String, Object>> getUserDetails(String accessToken) async {
+    const String url = 'https://$AUTH0_DOMAIN/userinfo';
+    final http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{'Authorization': 'Bearer $accessToken'},
+    );
 
-  static final Marker _kLakeMarker = Marker(
-    markerId: MarkerId('_kLakeMarker'),
-    infoWindow: InfoWindow(title: "Lake"),
-    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-    position: LatLng(37.43296265331129, -122.08832357078792),
-  );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get user details');
+    }
+  }
 
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+  Future<void> loginAction() async {
+    setState(() {
+      isBusy = true;
+      errorMessage = '';
+    });
 
-  static final Polyline _kPolyline = Polyline(
-    polylineId: PolylineId('_kPolyline'),
-    points: [
-      LatLng(37.43296265331129, -122.08832357078792),
-      LatLng(37.43296265331129, -122.08832357078792)
-    ],
-    width: 5,
-  );
+    try {
+      final AuthorizationTokenResponse? result =
+          await appAuth.authorizeAndExchangeCode(
+        AuthorizationTokenRequest(
+          AUTH0_CLIENT_ID,
+          AUTH0_REDIRECT_URI,
+          issuer: 'https://$AUTH0_DOMAIN',
+          scopes: <String>['openid', 'profile', 'offline_access'],
+          // promptValues: ['login']
+        ),
+      );
 
-  static final Polygon _kPolygon = Polygon(
-    polygonId: PolygonId('_kPolygon'),
-    points: [
-      LatLng(37.43296265331129, -122.08832357078792),
-      LatLng(37.42796133580664, -122.085749655962),
-      LatLng(37.418, -122.092),
-      LatLng(37.435, -122.092),
-    ],
-    strokeWidth: 5,
-    fillColor: Colors.transparent,
-  );
+      final Map<String, Object> idToken = parseIdToken(result?.idToken as String);
+      final Map<String, Object> profile =
+          await getUserDetails(result?.accessToken as String);
+
+      await secureStorage.write(
+          key: 'refresh_token', value: result?.refreshToken as String);
+
+      setState(() {
+        isBusy = false;
+        isLoggedIn = true;
+        name = idToken['name'] as String?;
+        picture = profile['picture']as String?; 
+      });
+    } on Exception catch (e, s) {
+      debugPrint('login error: $e - stack: $s');
+
+      setState(() {
+        isBusy = false;
+        isLoggedIn = false;
+        errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> logoutAction() async {
+    await secureStorage.delete(key: 'refresh_token');
+    setState(() {
+      isLoggedIn = false;
+      isBusy = false;
+    });
+  }
 
   @override
   void initState() {
+    initAction();
     super.initState();
-
-    _setMarker(LatLng(37.42796133580664, -122.085749655962));
   }
 
-  void _setMarker(LatLng point) {
+  Future<void> initAction() async {
+    final String? storedRefreshToken =
+        await secureStorage.read(key: 'refresh_token');
+    if (storedRefreshToken == null) return;
+
     setState(() {
-      _markers.add(Marker(markerId: MarkerId('marker'), position: point));
+      isBusy = true;
     });
-  }
 
-  void _setPolygon() {
-    final String polygonIdVal = 'polygon_$_polygonIdCounter';
-    _polygonIdCounter++;
+    try {
+      final TokenResponse? response = await appAuth.token(TokenRequest(
+        AUTH0_CLIENT_ID,
+        AUTH0_REDIRECT_URI,
+        issuer: AUTH0_ISSUER,
+        refreshToken: storedRefreshToken,
+      ));
 
-    _polygons.add(Polygon(
-        polygonId: PolygonId(polygonIdVal),
-        points: polygonLatLngs,
-        strokeWidth: 2,
-        fillColor: Colors.transparent));
-  }
+      final Map<String, Object> idToken = parseIdToken(response?.idToken as String);
+      final Map<String, Object> profile =
+          await getUserDetails(response?.accessToken as String);
 
-  void _setPolyline(List<PointLatLng> points) {
-    final String polylineIdVal = 'polyline_$_polylinesIdCounter';
-    _polylinesIdCounter++;
-    print("this is the polyline I received");
-    print(polylineIdVal);
-    _polylines.add(
-      Polyline(
-          polylineId: PolylineId(polylineIdVal),
-          width: 2,
-          color: Colors.blue,
-          points: points
-              .map((point) => LatLng(point.latitude, point.longitude))
-              .toList()),
-    );
-  }
+      await secureStorage.write(
+          key: 'refresh_token', value: response?.refreshToken as String);
 
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: AppBar(title: Text("Google Maps")),
-      body: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(children: [
-                  TextFormField(
-                    controller: _originController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration:
-                        InputDecoration(hintText: "You are here (Demo)"),
-                    onChanged: (value) {
-                      print(value);
-                    },
-                  ),
-                  TextFormField(
-                    controller: _searchController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(hintText: "Search by City"),
-                    onChanged: (value) {
-                      print(value);
-                    },
-                  )
-                ]),
-              ),
-            ],
-          ),
-          // Row(
-          //   children: [
-          //     Expanded(
-          //         child: TextFormField(
-          //       controller: _searchController,
-          //       textCapitalization: TextCapitalization.words,
-          //       decoration: InputDecoration(hintText: "Search by City"),
-          //       onChanged: (value) {
-          //         print(value);
-          //       },
-          //     )),
-          //     IconButton(
-          //       onPressed: () async {
-          //         var place =
-          //             await LocationService().getPlace(_searchController.text);
-          //         _goToPlace(place);
-          //       },
-          //       icon: Icon(Icons.search),
-          //     )
-          //   ],
-          // ),
-          IconButton(
-            onPressed: () async {
-              // print('origins: ${_originController.text}');
-              var directions = await LocationService().getDirections(
-                  _originController.text, _searchController.text);
-              // var place =
-              //     await LocationService().getPlace(_searchController.text);
-              // _goToPlace(place);
-              // print('Directions $directions');
-              _goToPlace(
-                  directions['start_location']['lat'],
-                  directions['start_location']['lng'],
-                  directions["boundsNe"],
-                  directions["boundsSw"]);
-
-              _setPolyline(directions['polyline_decode']);
-            },
-            icon: Icon(Icons.search),
-          ),
-          Expanded(
-            child: GoogleMap(
-                markers: _markers,
-                mapType: MapType.hybrid,
-                polylines: _polylines,
-                polygons: _polygons,
-                initialCameraPosition: _kGooglePlex,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                onMapCreated: (GoogleMapController controller) {
-                  _controller.complete(controller);
-                },
-                onTap: (point) {
-                  setState(() {
-                    polygonLatLngs.add(point);
-                    _setPolygon();
-                  });
-                }),
-          )
-        ],
-      ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _goToTheLake,
-      //   label: Text('To the lake!'),
-      //   icon: Icon(Icons.directions_boat),
-      // ),
-    );
-  }
-
-  Future<void> _goToPlace(
-    // Map<String, dynamic> place
-    double lat,
-    double lng,
-    Map<String, dynamic> boundsNe,
-    Map<String, dynamic> boundsSw,
-  ) async {
-    // final double lat = place['geometry']['location']['lat'];
-    // final double lng = place['geometry']['location']['lng'];
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(target: LatLng(lat, lng), zoom: 12),
-    ));
-
-    controller.animateCamera(CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-            southwest: LatLng(boundsSw['lat'], boundsSw['lng']),
-            northeast: LatLng(boundsNe['lat'], boundsNe['lng'])),
-        25));
-
-    _setMarker(LatLng(lat, lng));
-  }
-
-  Future<void> _goToTheLake() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+      setState(() {
+        isBusy = false;
+        isLoggedIn = true;
+        name = idToken['name'] as String?;
+        picture = profile['picture'] as String?;
+      });
+    } on Exception catch (e, s) {
+      debugPrint('error on refresh token: $e - stack: $s');
+      await logoutAction();
+    }
   }
 }
