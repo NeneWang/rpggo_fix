@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rpggo/location_services.dart';
 
@@ -30,9 +31,11 @@ class MapSampleState extends State<MapSample> {
 
   Set<Marker> _markers = Set<Marker>();
   Set<Polygon> _polygons = Set<Polygon>();
+  Set<Polyline> _polylines = Set<Polyline>();
   List<LatLng> polygonLatLngs = <LatLng>[];
 
   int _polygonIdCounter = 1;
+  int _polylinesIdCounter = 2;
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -104,6 +107,21 @@ class MapSampleState extends State<MapSample> {
         fillColor: Colors.transparent));
   }
 
+  void _setPolyline(List<PointLatLng> points) {
+    final String polylineIdVal = 'polyline_$_polylinesIdCounter';
+    _polylinesIdCounter++;
+
+    _polylines.add(
+      Polyline(
+          polylineId: PolylineId(polylineIdVal),
+          width: 2,
+          color: Colors.blue,
+          points: points
+              .map((point) => LatLng(point.latitude, point.longitude))
+              .toList()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -117,7 +135,8 @@ class MapSampleState extends State<MapSample> {
                   TextFormField(
                     controller: _originController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(hintText: "You are here (Demo)"),
+                    decoration:
+                        InputDecoration(hintText: "You are here (Demo)"),
                     onChanged: (value) {
                       print(value);
                     },
@@ -157,11 +176,13 @@ class MapSampleState extends State<MapSample> {
           // ),
           IconButton(
             onPressed: () async {
-              var directions = LocationService().getDirections(_originController.text, _searchController.text);
+              var directions = LocationService().getDirections(
+                  _originController.text, _searchController.text);
               // var place =
               //     await LocationService().getPlace(_searchController.text);
               // _goToPlace(place);
-              _goToPlace(directions['start_location']['lat'], directions['start_location']['lng']);
+              _goToPlace(directions['start_location']['lat'],
+                  directions['start_location']['lng']);
             },
             icon: Icon(Icons.search),
           ),
@@ -186,11 +207,11 @@ class MapSampleState extends State<MapSample> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
-        label: Text('To the lake!'),
-        icon: Icon(Icons.directions_boat),
-      ),
+      // floatingActionButton: FloatingActionButton.extended(
+      //   onPressed: _goToTheLake,
+      //   label: Text('To the lake!'),
+      //   icon: Icon(Icons.directions_boat),
+      // ),
     );
   }
 
