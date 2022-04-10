@@ -184,8 +184,7 @@ class MapSampleState extends State<MapSample> {
               //     await LocationService().getPlace(_searchController.text);
               // _goToPlace(place);
               // print('Directions $directions');
-              _goToPlace(directions['start_location']['lat'],
-                  directions['start_location']['lng']);
+              _goToPlace(directions['start_location']['lat'], directions['start_location']['lng'], directions["boundsNe"], directions["boundsSw"]);
 
               _setPolyline(directions['polyline_decode']);
             },
