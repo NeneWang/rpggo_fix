@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rpggo/location_services.dart';
+import 'package:location/location.dart';
 
 void main() => runApp(MyApp());
 
@@ -33,6 +34,9 @@ class MapSampleState extends State<MapSample> {
   Set<Polygon> _polygons = Set<Polygon>();
   Set<Polyline> _polylines = Set<Polyline>();
   List<LatLng> polygonLatLngs = <LatLng>[];
+
+  
+  Location _location = Location();
 
   int _polygonIdCounter = 1;
   int _polylinesIdCounter = 2;
