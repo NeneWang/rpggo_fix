@@ -37,6 +37,14 @@ class LocationService {
     var response = await http.get(Uri.parse(url));
     var json = convert.jsonDecode(response.body);
 
+    var results = {
+      'bounds_me': json["routes"][0]["bounds"]["northeast"],
+      'bounds_sw': json["routes"][0]["bounds"]["southeast"],
+      'start_location': json["routes"][0]["legs"]["start_location"],
+      'end_location': json["routes"][0]["legs"][0]["end_location"],
+      'polyline': json["routes"][0]["overview_polyline"]["point"],
+    };
+
     print(json);
   }
 }
