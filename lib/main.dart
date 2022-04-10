@@ -157,10 +157,11 @@ class MapSampleState extends State<MapSample> {
           // ),
           IconButton(
             onPressed: () async {
-              LocationService().getDirections(_originController.text, _searchController.text);
+              var directions = LocationService().getDirections(_originController.text, _searchController.text);
               // var place =
               //     await LocationService().getPlace(_searchController.text);
               // _goToPlace(place);
+              _goToPlace(directions['start_location']['lat'], directions['start_location']['lng']);
             },
             icon: Icon(Icons.search),
           ),
@@ -193,9 +194,13 @@ class MapSampleState extends State<MapSample> {
     );
   }
 
-  Future<void> _goToPlace(Map<String, dynamic> place) async {
-    final double lat = place['geometry']['location']['lat'];
-    final double lng = place['geometry']['location']['lng'];
+  Future<void> _goToPlace(
+    // Map<String, dynamic> place
+    double lat,
+    double lng,
+  ) async {
+    // final double lat = place['geometry']['location']['lat'];
+    // final double lng = place['geometry']['location']['lng'];
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: LatLng(lat, lng), zoom: 12),
